@@ -6,10 +6,11 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
 
+from app.models.style import Style
+from app.models.body_type import BodyType
+
 if TYPE_CHECKING:
     from app.models.user import User
-    from app.models.style import Style
-    from app.models.body_type import BodyType
 
 
 profile_styles = Table(
