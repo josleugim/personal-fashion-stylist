@@ -1,17 +1,17 @@
 from pydantic import BaseModel
 
-class StyleBase(BaseModel):
+class BodyTypeBase(BaseModel):
     name: str
     description: str
     is_active: bool = True
 
-class StyleCreate(StyleBase):
+class BodyTypeCreate(BodyTypeBase):
     pass
 
-class StyleUpdate(StyleBase):
+class BodyTypeUpdate(BodyTypeBase):
     pass
 
-class StyleResponse(StyleBase):
+class BodyTypeResponse(BodyTypeBase):
     id: int
     name: str
     description: str
