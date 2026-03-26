@@ -15,6 +15,9 @@ async def create_style(db: AsyncSession, style: StyleCreate) -> Style:
     db_style = Style(
         name=style.name,
         description=style.description,
+        strictness=style.strictness,
+        palette=style.palette,
+        avoid=style.avoid,
     )
     db.add(db_style)
     await db.flush()
