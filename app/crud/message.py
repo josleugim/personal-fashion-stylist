@@ -19,5 +19,5 @@ async def create_message(db: AsyncSession, message: MessageCreate) -> Message:
     return db_message
 
 async def get_recent_by_user(db: AsyncSession, user_id: int, limit: int = 5) -> list[Message]:
-    result = await db.execute(select(Message).where(Message.profile_id.eq(user_id)).limit(limit))
+    result = await db.execute(select(Message).where(Message.profile_id == user_id).limit(limit))
     return result.scalars().all()

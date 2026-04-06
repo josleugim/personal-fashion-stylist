@@ -49,5 +49,6 @@ class Profile(Base):
     favorite_colors: Mapped[List[str] | None] = mapped_column(ARRAY(String), nullable=True)
     colors_to_avoid: Mapped[List[str] | None] = mapped_column(ARRAY(String), nullable=True)
     budget: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    location: Mapped[str | None] = mapped_column(String(100), nullable=True)
     logo_tolerance: Mapped[str | None] = mapped_column(SAEnum(LogoTolerance), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)

@@ -1,5 +1,6 @@
 import httpx
-import json
+from fastapi import HTTPException
+
 from app.core.config import settings
 
 def build_system_prompt(user_profile: dict) -> str:
@@ -10,8 +11,9 @@ def build_system_prompt(user_profile: dict) -> str:
     body_notes = user_profile.get("body_notes", "none provided")
     budget = user_profile.get("budget", "mid")
     location = user_profile.get("location", "")
-    occasions = ", ".join(user_profile.get("occasions", []))
+    occasion = ", ".join(user_profile.get("occasion", ""))
     wardrobe = ", ".join(user_profile.get("wardrobe_items", []))
+    weather = user_profile.get("weather", "")
 
     budget_guidance = {
         "low": "Suggest accessible brands (Zara, H&M, ASOS, Mango).",
@@ -31,8 +33,9 @@ def build_system_prompt(user_profile: dict) -> str:
     Preferred colors: {palette}
     Colors to avoid: {avoid}
     Body/fit notes: {body_notes}
-    Typical occasions: {occasions}
+    Typical occasion: {occasion}
     Wardrobe items: {wardrobe}
+    Weather: {weather}
 
     BUDGET GUIDANCE
     ─────────────────────────────────
@@ -77,9 +80,17 @@ async def call_claude(system_prompt: str, messages: list, image_base64: str = No
     async with httpx.AsyncClient(timeout=30) as client:
         response = await client.post(
             "https://api.anthropic.com/v1/messages",
-            headers={"Content-Type": "application/json"},
+            headers={
+                "Content-Type": "application/json",
+                "x-api-key": settings.ANTHROPIC_API_KEY,
+                "anthropic-version": "2023-06-01"
+            },
             json=payload
         )
+        if response.status_code != 200:
+            print("Claude error body:", response.json())
+            raise HTTPException(status_code=502, detail=response.json())
+
         response.raise_for_status()
         data = response.json()
 

@@ -1,12 +1,17 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 from app.models.profile import Profile
 from app.models.style import Style
 from app.models.body_type import BodyType
 from app.schemas.profile import ProfileCreate
 
 async def get_profile(db: AsyncSession, profile_id: int) -> Profile | None:
-    result = await db.execute(select(Profile).where(Profile.id == profile_id))
+    result = await db.execute(
+        select(Profile)
+        .where(Profile.user_id == profile_id)
+        .options(selectinload(Profile.styles), selectinload(Profile.body_types))
+    )
     return result.scalar_one_or_none()
 
 async def create_profile(db: AsyncSession, profile: ProfileCreate) -> Profile:

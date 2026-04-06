@@ -22,7 +22,7 @@ async def suggest_outfit(
 ):
     # ── 1. Fetch user data from existing models ──────────────────
     user: User | None = await crud_user.get_user(db, payload.user_id)
-    profile: Profile | None = await crud_profile.get_profile(db, payload.user_id)
+    profile: Profile | None = await crud_profile.get_profile(db, payload.profile_id)
 
     if not user or not profile:
         raise HTTPException(status_code=404, detail="User or profile not found.")
@@ -39,9 +39,10 @@ async def suggest_outfit(
         "avoid_colors": profile.colors_to_avoid or [],
         "body_notes": profile.body_types if profile.body_types else "",
         "budget": profile.budget or "mid",
-        # "location": profile.location or "",
-        # "occasions": profile.occasions or [],
-        # "wardrobe_items": profile.wardrobe_items or []
+        "location": profile.location or "",
+        "occasion": payload.occasion,
+        # "wardrobe_items": profile.wardrobe_items or [],
+        "weather": payload.weather or "",
     }
 
     # ── 3. Fetch last 10 messages for conversation history ───────
