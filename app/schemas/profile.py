@@ -1,34 +1,32 @@
 from pydantic import BaseModel
 from typing import List
-from app.schemas.style import StyleResponse
-from app.schemas.body_type import BodyTypeResponse
 
 class ProfileBase(BaseModel):
-    fit_notes: str | None = None
-    favorite_colors: str | None = None
-    colors_to_avoid: str | None = None
-
-class ProfileCreate(ProfileBase):
-    fit_notes: str | None = None
-    favorite_colors: str | None = None
-    colors_to_avoid: str | None = None
+    user_id: int
     style_ids: List[int] = []
     body_type_ids: List[int] = []
+    fit_notes: str | None = None
+    favorite_colors: List[str] = []
+    colors_to_avoid: List[str] = []
+    budget: str | None = None
+    logo_tolerance: str | None = None
+
+class ProfileCreate(ProfileBase):
+    pass
 
 class ProfileUpdate(ProfileBase):
-    fit_notes: str | None = None
-    favorite_colors: str | None = None
-    colors_to_avoid: str | None = None
-    style_ids: List[int] | None = None
-    body_type_ids: List[int] | None = None
+    pass
 
 class ProfileResponse(ProfileBase):
     id: int
+    user_id: int
+    style_ids: List[int] = []
+    body_type_ids: List[int] = []
     fit_notes: str | None = None
-    favorite_colors: str | None = None
-    colors_to_avoid: str | None = None
-    styles: List[StyleResponse] = []
-    body_types: List[BodyTypeResponse] = []
+    favorite_colors: List[str] = []
+    colors_to_avoid: List[str] = []
+    budget: str | None = None
+    logo_tolerance: str | None = None
 
     class Config:
         from_attributes = True

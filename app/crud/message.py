@@ -9,6 +9,7 @@ async def get_messages(db: AsyncSession, skip: int = 0, limit: int = 100) -> lis
 
 async def create_message(db: AsyncSession, message: MessageCreate) -> Message:
     db_message = Message(
+        profile_id=message.profile_id,
         role=message.role,
         content=message.content
     )
@@ -16,3 +17,7 @@ async def create_message(db: AsyncSession, message: MessageCreate) -> Message:
     await db.flush()
     await db.refresh(db_message)
     return db_message
+
+async def get_recent_by_user(db: AsyncSession, user_id: int, limit: int = 5) -> list[Message]:
+    result = await db.execute(select(Message).where(Message.profile_id.eq(user_id)).limit(limit))
+    return result.scalars().all()

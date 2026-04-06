@@ -6,7 +6,6 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import Enum as SAEnum
 
 from app.db.base import Base
-
 from app.enums.style import StrictnessLevel
 
 if TYPE_CHECKING:
