@@ -11,6 +11,7 @@ from app.models.body_type import BodyType
 
 if TYPE_CHECKING:
     from app.models.user import User
+    from app.models.message import Message
 
 
 profile_styles = Table(
@@ -41,6 +42,7 @@ class Profile(Base):
     user: Mapped["User"] = relationship(back_populates="profile", uselist=False)
     styles: Mapped[List["Style"]] = relationship(secondary=profile_styles, back_populates="profiles")
     body_types: Mapped[List["BodyType"]] = relationship(secondary=profile_body_types, back_populates="profiles")
+    messages: Mapped[List["Message"]] = relationship(back_populates="profile")
     fit_notes: Mapped[str | None] = mapped_column(String(255), nullable=True)
     favorite_colors: Mapped[str | None] = mapped_column(String(255), nullable=True)
     colors_to_avoid: Mapped[str | None] = mapped_column(String(255), nullable=True)
