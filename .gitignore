@@ -89,3 +89,4 @@ logs/
 
 # FastAPI / Uvicorn (if you write pid files locally)
 *.pid
+gcs-credentials.json

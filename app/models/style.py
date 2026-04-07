@@ -1,12 +1,11 @@
 from datetime import datetime
 from typing import TYPE_CHECKING, List
 
-from sqlalchemy import String, Integer, DateTime, Boolean, ARRAY
+from sqlalchemy import String, Integer, DateTime, Boolean, ARRAY, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import Enum as SAEnum
 
 from app.db.base import Base
-
 from app.enums.style import StrictnessLevel
 
 if TYPE_CHECKING:
@@ -18,7 +17,7 @@ class Style(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     name: Mapped[str] = mapped_column(String(100), nullable=False)
-    description: Mapped[str] = mapped_column(String(255), nullable=False)
+    description: Mapped[str] = mapped_column(Text, nullable=False)
     strictness: Mapped[str] = mapped_column(SAEnum(StrictnessLevel), nullable=False)
     palette: Mapped[list[str] | None] = mapped_column(ARRAY(String), nullable=True)
     avoid: Mapped[list[str] | None] = mapped_column(ARRAY(String), nullable=True)

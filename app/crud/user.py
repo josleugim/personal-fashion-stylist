@@ -2,6 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.models.user import User
 from app.schemas.user import UserCreate, UserUpdate
+from app.utils.security import hash_password
 
 
 async def get_user(db: AsyncSession, user_id: int) -> User | None:
@@ -19,10 +20,14 @@ async def get_users(db: AsyncSession, skip: int = 0, limit: int = 100) -> list[U
     return result.scalars().all()
 
 
-async def create_user(db: AsyncSession, user_in: UserCreate) -> User:
+async def create_user(db: AsyncSession, user: UserCreate) -> User:
+    hashed = hash_password(user.password)
+
     db_user = User(
-        name=user_in.name,
-        email=user_in.email,
+        first_name=user.first_name,
+        last_name=user.last_name,
+        email=user.email,
+        password=hashed,
     )
     db.add(db_user)
     await db.flush()        # Sends SQL but doesn't commit yet

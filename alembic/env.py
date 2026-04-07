@@ -8,7 +8,7 @@ from alembic import context
 
 # Import your models and settings
 from app.db.base import Base
-from app.models import user, profile, body_type, style # import all models so Alembic detects them
+from app.models import user, profile, body_type, style, message, wardrobe # import all models so Alembic detects them
 from app.core.config import settings
 
 # this is the Alembic Config object, which provides
