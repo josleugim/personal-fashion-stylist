@@ -10,7 +10,7 @@ async def get_profile(db: AsyncSession, profile_id: int) -> Profile | None:
     result = await db.execute(
         select(Profile)
         .where(Profile.user_id == profile_id)
-        .options(selectinload(Profile.styles), selectinload(Profile.body_types))
+        .options(selectinload(Profile.styles), selectinload(Profile.body_types), selectinload(Profile.wardrobes))
     )
     return result.scalar_one_or_none()
 

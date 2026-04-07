@@ -14,6 +14,7 @@ from app.enums.profile import LogoTolerance
 if TYPE_CHECKING:
     from app.models.user import User
     from app.models.message import Message
+    from app.models.wardrobe import Wardrobe
 
 
 profile_styles = Table(
@@ -45,6 +46,7 @@ class Profile(Base):
     styles: Mapped[List["Style"]] = relationship(secondary=profile_styles, back_populates="profiles")
     body_types: Mapped[List["BodyType"]] = relationship(secondary=profile_body_types, back_populates="profiles")
     messages: Mapped[List["Message"]] = relationship(back_populates="profile")
+    wardrobes: Mapped[List["Wardrobe"]] = relationship(back_populates="profile")
     fit_notes: Mapped[str | None] = mapped_column(String(255), nullable=True)
     favorite_colors: Mapped[List[str] | None] = mapped_column(ARRAY(String), nullable=True)
     colors_to_avoid: Mapped[List[str] | None] = mapped_column(ARRAY(String), nullable=True)

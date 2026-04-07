@@ -1,5 +1,15 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
+
+class WardrobeReference(BaseModel):
+    id: str
+    name: Optional[str]
+    brand: Optional[str]
+    category: Optional[str]
+    subcategory: Optional[str]
+    image_url: str
+    thumbnail_url: Optional[str]
+    ai_description: Optional[str]
 
 class SuggestOutfitRequest(BaseModel):
     user_id: int
@@ -12,3 +22,4 @@ class SuggestOutfitRequest(BaseModel):
 class SuggestOutfitResponse(BaseModel):
     success: bool
     reply: str
+    wardrobe_references: List[WardrobeReference] = []

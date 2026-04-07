@@ -13,7 +13,7 @@ def build_system_prompt(user_profile: dict) -> str:
     budget = user_profile.get("budget", "mid")
     location = user_profile.get("location", "")
     occasion = ", ".join(user_profile.get("occasion", ""))
-    wardrobe = ", ".join(user_profile.get("wardrobe_items", []))
+    wardrobe = ", ".join(user_profile.get("wardrobe", []))
     weather = user_profile.get("weather", "")
 
     budget_guidance = {
@@ -58,7 +58,7 @@ def build_system_prompt(user_profile: dict) -> str:
        💡 [1-sentence why it works]
     """.strip()
 
-async def call_claude(system_prompt: str, messages: list, image_base64: str = None):
+async def call_claude(system_prompt: str, messages: list, image_base64: str = None, wardrobe: list = []) -> dict:
     if image_base64:
         user_content = [
             {"type": "image", "source": {
@@ -69,6 +69,11 @@ async def call_claude(system_prompt: str, messages: list, image_base64: str = No
             {"type": "text", "text": messages[-1]["content"]}
         ]
         messages = messages[:-1] + [{"role": "user", "content": user_content}]
+
+        # Sanitize messages
+        messages = [m for m in messages if m.get("content")]
+        while messages and messages[0]["role"] == "assistant":
+            messages.pop(0)
 
     payload = {
         "model": "claude-sonnet-4-6",
@@ -96,11 +101,19 @@ async def call_claude(system_prompt: str, messages: list, image_base64: str = No
         data = response.json()
 
         # Extract text blocks (may also contain tool_use blocks)
-        return "\n".join(
+        reply_text = "\n".join(
             block["text"]
             for block in data.get("content", [])
             if block.get("type") == "text"
         )
+
+        # ── Match wardrobe items mentioned in the reply ──────────────
+        matched_items = _match_wardrobe_items(reply_text, wardrobe)
+
+        return {
+            "reply": reply_text,
+            "wardrobe_references": matched_items
+        }
 
 async def analyze_wardrobe_item(image_base64: str, media_type: str = "image/jpeg") -> dict:
     payload = {
@@ -150,5 +163,28 @@ async def analyze_wardrobe_item(image_base64: str, media_type: str = "image/jpeg
 
     raw = data["content"][0]["text"]
     clean = raw.replace("```json", "").replace("```", "").strip()
-    print(clean)
     return json.loads(clean)
+
+def _match_wardrobe_items(reply_text: str, wardrobe_items: list) -> list:
+    """Find wardrobe items whose name or brand appears in Claude's reply."""
+    reply_lower = reply_text.lower()
+    matched = []
+
+    for item in wardrobe_items:
+        # Check if item name or brand is mentioned in the reply
+        name_match  = item.get("name")  and item["name"].lower()  in reply_lower
+        brand_match = item.get("brand") and item["brand"].lower() in reply_lower
+
+        if name_match or brand_match:
+            matched.append({
+                "id":            str(item.get("id")),
+                "name":          item.get("name"),
+                "brand":         item.get("brand"),
+                "category":      item.get("category"),
+                "subcategory":   item.get("subcategory"),
+                "image_url":     item.get("image_url"),
+                "thumbnail_url": item.get("thumbnail_url"),
+                "ai_description": item.get("ai_description"),
+            })
+
+    return matched

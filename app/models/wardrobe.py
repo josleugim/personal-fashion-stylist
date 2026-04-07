@@ -3,14 +3,20 @@ from datetime import datetime
 
 from sqlalchemy import Column, Integer, String, DateTime, Boolean, ARRAY, ForeignKey
 from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy.orm import relationship
+from typing import TYPE_CHECKING
 
 from app.db.base import Base
+
+if TYPE_CHECKING:
+    from app.models.profile import Profile
 
 class Wardrobe(Base):
     __tablename__ = "wardrobes"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     profile_id = Column(Integer, ForeignKey("profiles.id"), nullable=False)
+    profile = relationship("Profile", back_populates="wardrobes")
     # ── Image storage (Google Cloud Bucket) ─────────────────────
     image_filename = Column(String, nullable=False)  # original filename
     image_url = Column(String, nullable=False)  # public/signed GCS URL
