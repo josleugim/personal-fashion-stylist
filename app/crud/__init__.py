@@ -1,3 +1,3 @@
-from . import user, style, profile, body_type, message
+from . import user, style, profile, body_type, message, wardrobe
 
-__all__ = ["user", "style", "profile", "body_type", "message"]
+__all__ = ["user", "style", "profile", "body_type", "message", "wardrobe"]

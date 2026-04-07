@@ -1,5 +1,6 @@
 import httpx
 from fastapi import HTTPException
+from pydantic import json
 
 from app.core.config import settings
 
@@ -100,3 +101,49 @@ async def call_claude(system_prompt: str, messages: list, image_base64: str = No
             for block in data.get("content", [])
             if block.get("type") == "text"
         )
+
+async def analyze_wardrobe_item(image_base64: str) -> dict:
+    payload = {
+        "model": "claude-sonnet-4-20250514",
+        "max_tokens": 500,
+        "system": """You are a fashion item analyzer. When given a clothing photo, 
+        return ONLY a JSON object with no extra text.""",
+        "messages": [{
+            "role": "user",
+            "content": [
+                {"type": "image", "source": {
+                    "type": "base64",
+                    "media_type": "image/jpeg",
+                    "data": image_base64
+                }},
+                {"type": "text", "text": """Analyze this clothing item and return JSON:
+                {
+                  "category": "top|bottom|shoes|outerwear|accessory|bag|dress|activewear",
+                  "subcategory": "t-shirt|jeans|sneakers|etc",
+                  "color": ["primary color", "secondary color if any"],
+                  "pattern": "solid|striped|plaid|floral|graphic|animal-print|etc",
+                  "style_tags": ["minimalist", "casual", "streetwear", "etc — max 3"],
+                  "occasion_tags": ["everyday", "office", "formal", "sport", "etc — max 3"],
+                  "season": ["spring", "summer", "fall", "winter"],
+                  "fabric": "cotton|linen|wool|denim|leather|synthetic|etc",
+                  "ai_description": "One natural sentence describing this item"
+                }"""}
+            ]
+        }]
+    }
+
+    async with httpx.AsyncClient(timeout=30) as client:
+        response = await client.post(
+            "https://api.anthropic.com/v1/messages",
+            headers={
+                "Content-Type": "application/json",
+                "x-api-key": settings.ANTHROPIC_API_KEY,
+                "anthropic-version": "2023-06-01"
+            },
+            json=payload
+        )
+        data = response.json()
+
+    raw = data["content"][0]["text"]
+    clean = raw.replace("```json", "").replace("```", "").strip()
+    return json.loads(clean)
