@@ -15,3 +15,4 @@ class BodyType(Base):
     description: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
     profiles: Mapped[List["Profile"]] = relationship(secondary="profile_body_types", back_populates="body_types")
+    # TODO: missing is_active field
