@@ -1,6 +1,6 @@
 import httpx
+import json
 from fastapi import HTTPException
-from pydantic import json
 
 from app.core.config import settings
 
@@ -71,7 +71,7 @@ async def call_claude(system_prompt: str, messages: list, image_base64: str = No
         messages = messages[:-1] + [{"role": "user", "content": user_content}]
 
     payload = {
-        "model": "claude-sonnet-4-20250514",
+        "model": "claude-sonnet-4-6",
         "max_tokens": 1000,
         "system": system_prompt,
         "tools": [{"type": "web_search_20250305", "name": "web_search"}],
@@ -102,9 +102,9 @@ async def call_claude(system_prompt: str, messages: list, image_base64: str = No
             if block.get("type") == "text"
         )
 
-async def analyze_wardrobe_item(image_base64: str) -> dict:
+async def analyze_wardrobe_item(image_base64: str, media_type: str = "image/jpeg") -> dict:
     payload = {
-        "model": "claude-sonnet-4-20250514",
+        "model": "claude-sonnet-4-6",
         "max_tokens": 500,
         "system": """You are a fashion item analyzer. When given a clothing photo, 
         return ONLY a JSON object with no extra text.""",
@@ -113,7 +113,7 @@ async def analyze_wardrobe_item(image_base64: str) -> dict:
             "content": [
                 {"type": "image", "source": {
                     "type": "base64",
-                    "media_type": "image/jpeg",
+                    "media_type": media_type,
                     "data": image_base64
                 }},
                 {"type": "text", "text": """Analyze this clothing item and return JSON:
@@ -144,6 +144,11 @@ async def analyze_wardrobe_item(image_base64: str) -> dict:
         )
         data = response.json()
 
+    if "content" not in data:
+        print(f"[Claude API error] {data}")
+        return {}
+
     raw = data["content"][0]["text"]
     clean = raw.replace("```json", "").replace("```", "").strip()
+    print(clean)
     return json.loads(clean)

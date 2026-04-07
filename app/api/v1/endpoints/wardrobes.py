@@ -38,9 +38,11 @@ async def upload_wardrobe_item(
     # ── 3. Call Claude to auto-tag the item ─────────────────────
     try:
         image_base64 = base64.b64encode(file_bytes).decode("utf-8")
-        ai_data = await analyze_wardrobe_item(image_base64)
+        media_type = file.content_type or "image/jpeg"
+        ai_data = await analyze_wardrobe_item(image_base64, media_type)
     except Exception as e:
         # Don't block the upload if AI fails — save with empty tags
+        print(f"[Claude analysis failed] {type(e).__name__}: {e}")
         ai_data = {}
 
     # ── 4. Save everything to the database ──────────────────────
