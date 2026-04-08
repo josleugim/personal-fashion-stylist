@@ -1,4 +1,7 @@
 import bcrypt
+from datetime import datetime, timedelta, timezone
+from jose import JWTError, jwt
+from app.core.config import settings
 
 
 def hash_password(password: str) -> str:
@@ -7,3 +10,24 @@ def hash_password(password: str) -> str:
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return bcrypt.checkpw(plain_password.encode("utf-8"), hashed_password.encode("utf-8"))
+
+
+def create_access_token(data: dict) -> str:
+    to_encode = data.copy()
+    expire = datetime.now(timezone.utc) + timedelta(minutes=settings.JWT_ACCESS_TOKEN_EXPIRE)
+    to_encode.update({"exp": expire, "type": "access"})
+    return jwt.encode(to_encode, settings.JWT_SECRET_KEY, algorithm="HS256")
+
+
+def create_refresh_token(data: dict) -> str:
+    to_encode = data.copy()
+    expire = datetime.now(timezone.utc) + timedelta(days=settings.JWT_REFRESH_TOKEN_EXPIRE)
+    to_encode.update({"exp": expire, "type": "refresh"})
+    return jwt.encode(to_encode, settings.JWT_SECRET_KEY, algorithm="HS256")
+
+
+def decode_token(token: str) -> dict | None:
+    try:
+        return jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=["HS256"])
+    except JWTError:
+        return None

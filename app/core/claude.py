@@ -25,6 +25,7 @@ def build_system_prompt(user_profile: dict) -> str:
     return f"""
     You are a personal fashion stylist.
     Suggest outfit combinations tailored to the user's style, wardrobe, and occasion.
+    Always respond in the same language the user writes in.
 
     USER PROFILE
     ─────────────────────────────────
