@@ -9,6 +9,7 @@ router = APIRouter()
 
 @router.get("/{user_id}", response_model=UserResponse)
 async def get_user(user_id: int, db: AsyncSession = Depends(get_db)):
+    print("------------------------>calling crud")
     user = await crud.user.get_user(db, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")

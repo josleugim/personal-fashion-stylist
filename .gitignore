@@ -72,6 +72,9 @@ dmypy.json
 *.db
 *.sqlite3
 
+# Claude Code (local settings are machine-specific)
+.claude/settings.local.json
+
 # IDE / editors
 .idea/
 *.swp

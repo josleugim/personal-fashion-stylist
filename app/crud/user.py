@@ -1,12 +1,21 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 from app.models.user import User
+from app.models.profile import Profile
 from app.schemas.user import UserCreate, UserUpdate
 from app.utils.security import hash_password
 
 
 async def get_user(db: AsyncSession, user_id: int) -> User | None:
-    result = await db.execute(select(User).where(User.id == user_id))
+    result = await db.execute(
+        select(User)
+        .where(User.id == user_id)
+        .options(
+            selectinload(User.profile).selectinload(Profile.styles),
+            selectinload(User.profile).selectinload(Profile.body_types),
+        )
+    )
     return result.scalar_one_or_none()
 
 

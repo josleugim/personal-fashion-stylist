@@ -1,3 +1,4 @@
+from __future__ import annotations
 from pydantic import BaseModel, EmailStr
 
 
@@ -19,6 +20,11 @@ class UserUpdate(BaseModel):
 
 class UserResponse(UserBase):
     id: int
+    profile: ProfileResponse | None = None
 
     class Config:
         from_attributes = True
+
+
+from app.schemas.profile import ProfileResponse  # noqa: E402
+UserResponse.model_rebuild()
