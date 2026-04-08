@@ -5,6 +5,37 @@ from PIL import Image
 import uuid
 import io
 
+def upload_body_type_image(file_bytes: bytes, filename: str) -> dict:
+    client = storage.Client.from_service_account_json(settings.GCS_CREDENTIALS_PATH)
+    bucket = client.get_bucket(settings.GCS_BUCKET)
+
+    unique_id = uuid.uuid4()
+    safe_filename = filename.replace(" ", "_").lower()
+
+    # ── 1. Prepare all image versions in memory FIRST ────────────
+    images = {
+        "original": file_bytes,
+        "thumbnail": _generate_thumbnail(file_bytes, size=(300, 300))
+    }
+
+    # ── 2. Define GCS paths ──────────────────────────────────────
+    paths = {
+        "original": f"body_type/{unique_id}_{safe_filename}",
+        "thumbnail": f"body_type/thumbnails/{unique_id}_{safe_filename}"
+    }
+
+    # ── 3. Upload each one separately ───────────────────────────
+    urls = {}
+    for key in images:
+        urls[key] = _upload_blob(bucket, paths[key], images[key])
+
+    return {
+        "image_filename": f"{unique_id}_{safe_filename}",
+        "image_url": urls["original"],
+        "thumbnail_url": urls["thumbnail"]
+    }
+
+
 def upload_wardrobe_image(file_bytes: bytes, filename: str, profile_id: int) -> dict:
     client = storage.Client.from_service_account_json(settings.GCS_CREDENTIALS_PATH)
     bucket = client.bucket(settings.GCS_BUCKET_NAME)

@@ -11,10 +11,13 @@ async def get_body_types(db: AsyncSession, skip: int = 0, limit: int = 100) -> l
     result = await db.execute(select(BodyType).offset(skip).limit(limit))
     return result.scalars().all()
 
-async def create_body_type(db: AsyncSession, body_type: BodyTypeCreate) -> BodyType:
+async def create_body_type(db: AsyncSession, body_type: BodyTypeCreate, image_data: dict) -> BodyType:
     db_body_type = BodyType(
         name=body_type.name,
         description=body_type.description,
+        image_filename=image_data["image_filename"],
+        image_url=image_data["image_url"],
+        thumbnail_url=image_data["thumbnail_url"]
     )
     db.add(db_body_type)
     await db.flush()
