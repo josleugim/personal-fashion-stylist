@@ -53,4 +53,6 @@ class Profile(Base):
     budget: Mapped[str | None] = mapped_column(String(100), nullable=True)
     location: Mapped[str | None] = mapped_column(String(100), nullable=True)
     logo_tolerance: Mapped[str | None] = mapped_column(SAEnum(LogoTolerance), nullable=True)
+    hobbies: Mapped[List[str] | None] = mapped_column(ARRAY(String), nullable=True)
+    sports: Mapped[List[str] | None] = mapped_column(ARRAY(String), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)

@@ -27,6 +27,8 @@ async def create_profile(db: AsyncSession, profile: ProfileCreate) -> Profile:
         colors_to_avoid=profile.colors_to_avoid,
         budget=profile.budget,
         logo_tolerance=profile.logo_tolerance,
+        hobbies=profile.hobbies,
+        spots=profile.sports
     )
     db.add(db_profile)
     await db.flush()

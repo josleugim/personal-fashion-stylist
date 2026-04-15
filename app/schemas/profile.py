@@ -13,7 +13,8 @@ class ProfileBase(BaseModel):
     colors_to_avoid: List[str] = []
     budget: str | None = None
     logo_tolerance: str | None = None
-
+    hobbies: List[str] | None = None
+    sports: List[str] | None = None
 
 class ProfileCreate(ProfileBase):
     pass
@@ -33,6 +34,8 @@ class ProfileResponse(BaseModel):
     colors_to_avoid: List[str] = []
     budget: str | None = None
     logo_tolerance: str | None = None
+    hobbies: List[str] | None = None
+    sports: List[str] | None = None
 
     class Config:
         from_attributes = True
