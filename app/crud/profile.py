@@ -30,10 +30,10 @@ async def create_profile(db: AsyncSession, profile: ProfileCreate) -> Profile:
         hobbies=profile.hobbies,
         sports=profile.sports,
         age=profile.age,
+        location=profile.location,
         height=profile.height,
     )
     db.add(db_profile)
     await db.flush()
-    await db.refresh(db_profile)
-    return db_profile
+    return await get_profile(db, db_profile.user_id)
     

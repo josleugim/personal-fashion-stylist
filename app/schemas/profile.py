@@ -12,6 +12,7 @@ class ProfileBase(BaseModel):
     favorite_colors: List[str] = []
     colors_to_avoid: List[str] = []
     budget: str | None = None
+    location: str | None = None
     logo_tolerance: str | None = None
     hobbies: List[str] | None = None
     sports: List[str] | None = None
@@ -35,6 +36,7 @@ class ProfileResponse(BaseModel):
     favorite_colors: List[str] = []
     colors_to_avoid: List[str] = []
     budget: str | None = None
+    location: str | None = None
     logo_tolerance: str | None = None
     hobbies: List[str] | None = None
     sports: List[str] | None = None

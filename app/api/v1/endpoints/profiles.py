@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, status
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError
 
 from app.schemas.profile import ProfileCreate, ProfileResponse
 from app.db.session import get_db
@@ -10,7 +11,10 @@ router = APIRouter()
 
 @router.post("/", response_model=ProfileResponse, status_code=status.HTTP_201_CREATED)
 async def create_profile(profile: ProfileCreate, db: AsyncSession = Depends(get_db)):
-    return await crud.profile.create_profile(db, profile)
+    try:
+        return await crud.profile.create_profile(db, profile)
+    except IntegrityError:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="A profile already exists for this user")
 
 @router.get("/{profile_id}", response_model=ProfileResponse, status_code=status.HTTP_200_OK)
 async def get_profile(profile_id: int, db: AsyncSession = Depends(get_db)):
