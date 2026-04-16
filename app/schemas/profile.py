@@ -15,6 +15,8 @@ class ProfileBase(BaseModel):
     logo_tolerance: str | None = None
     hobbies: List[str] | None = None
     sports: List[str] | None = None
+    age: int | None = None
+    height: int | None = None
 
 class ProfileCreate(ProfileBase):
     pass
@@ -36,6 +38,8 @@ class ProfileResponse(BaseModel):
     logo_tolerance: str | None = None
     hobbies: List[str] | None = None
     sports: List[str] | None = None
+    age: int | None = None
+    height: int | None = None
 
     class Config:
         from_attributes = True
