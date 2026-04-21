@@ -18,6 +18,7 @@ class ProfileBase(BaseModel):
     sports: List[str] | None = None
     age: int | None = None
     height: int | None = None
+    gender: str | None = None
 
 class ProfileCreate(ProfileBase):
     pass
@@ -42,6 +43,7 @@ class ProfileResponse(BaseModel):
     sports: List[str] | None = None
     age: int | None = None
     height: int | None = None
+    gender: str | None = None
 
     class Config:
         from_attributes = True

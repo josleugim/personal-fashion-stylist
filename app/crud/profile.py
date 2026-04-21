@@ -32,6 +32,7 @@ async def create_profile(db: AsyncSession, profile: ProfileCreate) -> Profile:
         age=profile.age,
         location=profile.location,
         height=profile.height,
+        gender=profile.gender
     )
     db.add(db_profile)
     await db.flush()

@@ -57,5 +57,5 @@ class Profile(Base):
     sports: Mapped[List[str] | None] = mapped_column(ARRAY(String), nullable=True)
     age: Mapped[int] = mapped_column(Integer, nullable=True)
     height: Mapped[int] = mapped_column(Integer, nullable=True)
-
+    gender: Mapped[str | None] = mapped_column(String(255), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
