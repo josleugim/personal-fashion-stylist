@@ -51,12 +51,17 @@ async def suggest_outfit(
     user_profile = {
         "name": user.first_name,
         "primary_style": profile.styles if profile.styles else "minimalist",
-        # "gender_expression": profile.gender_expression,
+        "gender_expression": profile.gender,
         "palette_preference": profile.favorite_colors or [],
         "avoid_colors": profile.colors_to_avoid or [],
         "body_notes": profile.body_types if profile.body_types else "",
         "budget": profile.budget or "mid",
         "location": profile.location or "",
+        "logo_tolerance": profile.logo_tolerance or "",
+        "hobbies": profile.hobbies or [],
+        "sports": profile.sports or [],
+        "age": profile.age or None,
+        "height": profile.height or None,
         "occasion": payload.occasion,
         "wardrobe": [  # pass names/brands to system prompt
             f"{item['brand']} {item['name'] or item['subcategory'] or item['category']}"

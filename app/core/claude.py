@@ -12,6 +12,11 @@ def build_system_prompt(user_profile: dict) -> str:
     body_notes = user_profile.get("body_notes", "none provided")
     budget = user_profile.get("budget", "mid")
     location = user_profile.get("location", "")
+    logo_tolerance = user_profile.get("logo_tolerance", "")
+    hobbies = user_profile.get("hobbies", [])
+    sports = user_profile.get("sports", [])
+    age = user_profile.get("age", None)
+    height = user_profile.get("height", None)
     occasion = ", ".join(user_profile.get("occasion", ""))
     wardrobe = ", ".join(user_profile.get("wardrobe", []))
     weather = user_profile.get("weather", "")
@@ -35,6 +40,11 @@ def build_system_prompt(user_profile: dict) -> str:
     Preferred colors: {palette}
     Colors to avoid: {avoid}
     Body/fit notes: {body_notes}
+    Logo tolerance: {logo_tolerance}
+    Hobbies: {hobbies}
+    Sports: {sports}
+    Age: {age}
+    Height: {height}
     Typical occasion: {occasion}
     Wardrobe items: {wardrobe}
     Weather: {weather}
