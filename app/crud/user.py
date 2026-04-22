@@ -1,3 +1,5 @@
+import secrets
+
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
@@ -59,3 +61,24 @@ async def delete_user(db: AsyncSession, user_id: int) -> User | None:
         await db.delete(db_user)
         await db.flush()
     return db_user
+
+
+async def get_or_create_google_user(
+    db: AsyncSession,
+    email: str,
+    first_name: str,
+    last_name: str | None,
+) -> User:
+    user = await get_user_by_email(db, email)
+    if user:
+        return user
+
+    db_user = User(
+        first_name=first_name,
+        last_name=last_name,
+        email=email,
+        password=hash_password(secrets.token_hex(32)),
+    )
+    db.add(db_user)
+    await db.flush()
+    return await get_user(db, db_user.id)

@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, Cookie, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_db
-from app.schemas.auth import LoginRequest, TokenResponse
+from app.schemas.auth import LoginRequest, TokenResponse, GoogleAuthRequest
 from app.schemas.user import UserCreate
 from app.utils.security import verify_password, create_access_token, create_refresh_token, decode_token
+from app.utils.google_auth import verify_google_token
 from app.core.config import settings
 from app import crud
 
@@ -105,3 +106,35 @@ async def signup(user: UserCreate, db: AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Email already registered")
 
     return await crud.user.create_user(db, user)
+
+
+@router.post("/google")
+async def google_login(
+    body: GoogleAuthRequest,
+    request: Request,
+    response: Response,
+    db: AsyncSession = Depends(get_db),
+):
+    token_data = await verify_google_token(body.id_token, settings.GOOGLE_CLIENT_ID)
+    if not token_data:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Google token")
+
+    if not token_data.get("email_verified"):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Google email not verified")
+
+    user = await crud.user.get_or_create_google_user(
+        db,
+        email=token_data["email"],
+        first_name=token_data.get("given_name", ""),
+        last_name=token_data.get("family_name"),
+    )
+
+    payload = {"sub": str(user.id)}
+    access_token = create_access_token(payload)
+    refresh_token = create_refresh_token(payload)
+
+    if _is_mobile_client(request):
+        return TokenResponse(access_token=access_token, refresh_token=refresh_token)
+
+    _set_auth_cookies(response, access_token, refresh_token)
+    return {"message": "Login successful", "user_id": user.id}
