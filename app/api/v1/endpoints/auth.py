@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Response, Cookie
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_db
 from app.schemas.auth import LoginRequest, TokenResponse
+from app.schemas.user import UserCreate
 from app.utils.security import verify_password, create_access_token, create_refresh_token, decode_token
 from app.core.config import settings
 from app import crud
@@ -95,3 +96,12 @@ async def refresh(
 async def logout(response: Response):
     response.delete_cookie("access_token")
     response.delete_cookie("refresh_token")
+
+@router.post('/signup', status_code=status.HTTP_201_CREATED)
+async def signup(user: UserCreate, db: AsyncSession = Depends(get_db)):
+    user_exists = await crud.user.get_user_by_email(db, user.email)
+
+    if user_exists:
+        raise HTTPException(status_code=400, detail="Email already registered")
+
+    return await crud.user.create_user(db, user)

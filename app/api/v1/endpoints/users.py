@@ -9,7 +9,6 @@ router = APIRouter()
 
 @router.get("/{user_id}", response_model=UserResponse)
 async def get_user(user_id: int, db: AsyncSession = Depends(get_db)):
-    print("------------------------>calling crud")
     user = await crud.user.get_user(db, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -19,14 +18,6 @@ async def get_user(user_id: int, db: AsyncSession = Depends(get_db)):
 @router.get("/", response_model=list[UserResponse])
 async def get_users(skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db)):
     return await crud.user.get_users(db, skip=skip, limit=limit)
-
-
-@router.post("/", response_model=UserResponse, status_code=201)
-async def create_user(user_in: UserCreate, db: AsyncSession = Depends(get_db)):
-    existing = await crud.user.get_user_by_email(db, user_in.email)
-    if existing:
-        raise HTTPException(status_code=400, detail="Email already registered")
-    return await crud.user.create_user(db, user_in)
 
 
 @router.patch("/{user_id}", response_model=UserResponse)
