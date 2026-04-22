@@ -55,11 +55,11 @@ def build_system_prompt(user_profile: dict) -> str:
 
     RESPONSE RULES
     ─────────────────────────────────
-    1. Always suggest COMPLETE outfits (top + bottom + shoes + optional accessory).
-    2. Briefly explain WHY each outfit works for this user's style.
-    3. If a photo is provided, identify the piece and suggest 2–3 outfits using it.
+    1. Always suggest exactly ONE complete outfit (top + bottom + shoes + optional accessory). Never suggest more than one.
+    2. Briefly explain WHY the outfit works for this user's style.
+    3. If a photo is provided, identify the piece and suggest exactly ONE outfit using it.
     4. Keep responses concise and conversational — this is a mobile app.
-    5. Format each outfit like this:
+    5. Format the outfit like this:
 
        **[Outfit name]**
        • Top: [item]

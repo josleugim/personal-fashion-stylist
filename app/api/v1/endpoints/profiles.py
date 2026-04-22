@@ -18,7 +18,7 @@ async def create_profile(profile: ProfileCreate, db: AsyncSession = Depends(get_
 
 @router.get("/{profile_id}", response_model=ProfileResponse, status_code=status.HTTP_200_OK)
 async def get_profile(profile_id: int, db: AsyncSession = Depends(get_db)):
-    profile = await crud.profile.get_profile(db, profile_id)
+    profile = await crud.profile.get_profile_by_user_id(db, profile_id)
     if not profile:
         raise HTTPException(status_code=404, detail="Profile not found")
     return profile

@@ -13,7 +13,6 @@ class WardrobeReference(BaseModel):
 
 class SuggestOutfitRequest(BaseModel):
     user_id: int
-    profile_id: int
     message: Optional[str] = None
     image_base64: Optional[str] = None
     occasion: Optional[str] = None

@@ -22,7 +22,7 @@ async def upload_wardrobe_item(
 ):
     # ── 0. Validate profile exists ──────────────────────────────
     # profile_id here is the user_id; resolve to the profile's actual PK
-    profile = await crud_profile.get_profile(db, profile_id)
+    profile = await crud_profile.get_profile_by_user_id(db, profile_id)
     if not profile:
         raise HTTPException(status_code=404, detail=f"Profile for user {profile_id} not found.")
     profile_pk = profile.id
