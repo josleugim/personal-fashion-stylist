@@ -23,4 +23,23 @@ async def create_body_type(db: AsyncSession, body_type: BodyTypeCreate, image_da
     await db.flush()
     await db.refresh(db_body_type)
     return db_body_type
-    
+
+async def put_body_type(db: AsyncSession, body_type_id: int, body_type: BodyTypeUpdate, image_data: dict | None) -> BodyType | None:
+    db_body_type = await get_body_type_by_id(db, body_type_id)
+    if db_body_type is None:
+        return None
+
+    if body_type.name is not None:
+        db_body_type.name = body_type.name
+    if body_type.description is not None:
+        db_body_type.description = body_type.description
+    if body_type.is_active is not None:
+        db_body_type.is_active = body_type.is_active
+    if image_data is not None:
+        db_body_type.image_filename = image_data["image_filename"]
+        db_body_type.image_url = image_data["image_url"]
+        db_body_type.thumbnail_url = image_data["thumbnail_url"]
+
+    await db.flush()
+    await db.refresh(db_body_type)
+    return db_body_type

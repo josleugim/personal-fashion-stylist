@@ -23,7 +23,7 @@ async def suggest_outfit(
 ):
     # ── 1. Fetch user data from existing models ──────────────────
     user: User | None = await crud_user.get_user(db, payload.user_id)
-    profile: Profile | None = await crud_profile.get_profile(db, payload.profile_id)
+    profile: Profile | None = await crud_profile.get_profile_by_user_id(db, payload.user_id)
 
     if not user or not profile:
         raise HTTPException(status_code=404, detail="User or profile not found.")
@@ -51,12 +51,17 @@ async def suggest_outfit(
     user_profile = {
         "name": user.first_name,
         "primary_style": profile.styles if profile.styles else "minimalist",
-        # "gender_expression": profile.gender_expression,
+        "gender_expression": profile.gender,
         "palette_preference": profile.favorite_colors or [],
         "avoid_colors": profile.colors_to_avoid or [],
         "body_notes": profile.body_types if profile.body_types else "",
         "budget": profile.budget or "mid",
         "location": profile.location or "",
+        "logo_tolerance": profile.logo_tolerance or "",
+        "hobbies": profile.hobbies or [],
+        "sports": profile.sports or [],
+        "age": profile.age or None,
+        "height": profile.height or None,
         "occasion": payload.occasion,
         "wardrobe": [  # pass names/brands to system prompt
             f"{item['brand']} {item['name'] or item['subcategory'] or item['category']}"
@@ -66,7 +71,7 @@ async def suggest_outfit(
     }
 
     # ── 3. Fetch last 10 messages for conversation history ───────
-    recent_messages: list[Message] = await crud_message.get_recent_by_user(db, payload.user_id, limit=10)
+    recent_messages: list[Message] = await crud_message.get_recent_by_user(db, profile.id, limit=10)
     history = [{"role": m.role, "content": m.content} for m in recent_messages]
 
     # ── 4. Append current user message to history ────────────────
@@ -86,7 +91,7 @@ async def suggest_outfit(
         raise HTTPException(status_code=502, detail=f"Claude API error: {str(e)}")
 
     # ── 6. Save exchange to message model ────────────────────────
-    await crud_message.create_message(db, MessageCreate(profile_id=payload.user_id, role="user", content=current_message))
-    await crud_message.create_message(db, MessageCreate(profile_id=payload.user_id, role="assistant", content=reply["reply"]))
+    await crud_message.create_message(db, MessageCreate(profile_id=profile.id, role="user", content=current_message))
+    await crud_message.create_message(db, MessageCreate(profile_id=profile.id, role="assistant", content=reply["reply"]))
 
     return SuggestOutfitResponse(success=True, reply=reply["reply"], wardrobe_references=reply["wardrobe_references"])

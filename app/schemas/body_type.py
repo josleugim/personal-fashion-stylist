@@ -1,29 +1,29 @@
+from typing import Optional
 from pydantic import BaseModel
-from fastapi import Form, UploadFile, File
 
 
 class BodyTypeBase(BaseModel):
     name: str
     description: str
-    image_url: str
-    thumbnail_url: str
+    image_url: Optional[str] = None
+    thumbnail_url: Optional[str] = None
     is_active: bool = True
 
 class BodyTypeCreate(BodyTypeBase):
-    name: str = Form(...)
-    description: str = Form(...)
-    file: UploadFile = File(...)
+    pass
 
 
 class BodyTypeUpdate(BodyTypeBase):
-    pass
+    name: Optional[str] = None
+    description: Optional[str] = None
+    is_active: Optional[bool] = None
 
 class BodyTypeResponse(BodyTypeBase):
     id: int
     name: str
     description: str
-    image_url: str
-    thumbnail_url: str
+    image_url: Optional[str] = None
+    thumbnail_url: Optional[str] = None
     is_active: bool
 
     class Config:

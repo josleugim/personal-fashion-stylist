@@ -4,6 +4,7 @@ from app.db.session import get_db
 from app.core.storage import upload_wardrobe_image
 from app.core.claude import analyze_wardrobe_item
 from app.crud import wardrobe as crud_wardrobe
+from app.crud import profile as crud_profile
 from app.schemas.wardrobe import WardrobeResponse
 from typing import Optional
 import base64
@@ -19,6 +20,13 @@ async def upload_wardrobe_item(
     file:    UploadFile = File(...),
     db:      AsyncSession = Depends(get_db)
 ):
+    # ── 0. Validate profile exists ──────────────────────────────
+    # profile_id here is the user_id; resolve to the profile's actual PK
+    profile = await crud_profile.get_profile_by_user_id(db, profile_id)
+    if not profile:
+        raise HTTPException(status_code=404, detail=f"Profile for user {profile_id} not found.")
+    profile_pk = profile.id
+
     # ── 1. Read image bytes ──────────────────────────────────────
     file_bytes = await file.read()
 
@@ -30,7 +38,7 @@ async def upload_wardrobe_item(
         image_data = upload_wardrobe_image(
             file_bytes=file_bytes,
             filename=file.filename,
-            profile_id=profile_id
+            profile_id=profile_pk
         )
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"GCS upload failed: {str(e)}")
@@ -48,7 +56,7 @@ async def upload_wardrobe_item(
     # ── 4. Save everything to the database ──────────────────────
     item = await crud_wardrobe.create(
         db=db,
-        profile_id=profile_id,
+        profile_id=profile_pk,
         image_data=image_data,
         ai_data=ai_data,
         user_data={"name": name, "brand": brand, "notes": notes}

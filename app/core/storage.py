@@ -7,7 +7,7 @@ import io
 
 def upload_body_type_image(file_bytes: bytes, filename: str) -> dict:
     client = storage.Client.from_service_account_json(settings.GCS_CREDENTIALS_PATH)
-    bucket = client.get_bucket(settings.GCS_BUCKET)
+    bucket = client.get_bucket(settings.GCS_BUCKET_NAME)
 
     unique_id = uuid.uuid4()
     safe_filename = filename.replace(" ", "_").lower()

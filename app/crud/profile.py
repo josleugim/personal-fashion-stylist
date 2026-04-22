@@ -6,10 +6,10 @@ from app.models.style import Style
 from app.models.body_type import BodyType
 from app.schemas.profile import ProfileCreate
 
-async def get_profile(db: AsyncSession, profile_id: int) -> Profile | None:
+async def get_profile_by_user_id(db: AsyncSession, user_id: int) -> Profile | None:
     result = await db.execute(
         select(Profile)
-        .where(Profile.user_id == profile_id)
+        .where(Profile.user_id == user_id)
         .options(selectinload(Profile.styles), selectinload(Profile.body_types), selectinload(Profile.wardrobes))
     )
     return result.scalar_one_or_none()
@@ -27,9 +27,14 @@ async def create_profile(db: AsyncSession, profile: ProfileCreate) -> Profile:
         colors_to_avoid=profile.colors_to_avoid,
         budget=profile.budget,
         logo_tolerance=profile.logo_tolerance,
+        hobbies=profile.hobbies,
+        sports=profile.sports,
+        age=profile.age,
+        location=profile.location,
+        height=profile.height,
+        gender=profile.gender
     )
     db.add(db_profile)
     await db.flush()
-    await db.refresh(db_profile)
-    return db_profile
+    return await get_profile_by_user_id(db, db_profile.user_id)
     

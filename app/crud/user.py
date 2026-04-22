@@ -39,9 +39,8 @@ async def create_user(db: AsyncSession, user: UserCreate) -> User:
         password=hashed,
     )
     db.add(db_user)
-    await db.flush()        # Sends SQL but doesn't commit yet
-    await db.refresh(db_user)  # Loads DB-generated fields like id
-    return db_user
+    await db.flush()
+    return await get_user(db, db_user.id)
 
 
 async def update_user(db: AsyncSession, db_user: User, user_in: UserUpdate) -> User:
