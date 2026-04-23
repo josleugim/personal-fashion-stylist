@@ -1,3 +1,4 @@
+from uuid import UUID
 from pydantic import BaseModel
 from datetime import datetime
 
@@ -14,7 +15,7 @@ class BrandUpdate(BrandBase):
     pass
 
 class BrandResponse(BrandBase):
-    id: int
+    id: UUID
     category: str
     tier: str
     origin: str

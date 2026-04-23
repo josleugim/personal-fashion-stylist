@@ -19,5 +19,5 @@ class Brand(Base):
     category: Mapped[str] = mapped_column(String(255), nullable=True)
     tier: Mapped[str] = mapped_column(String(255), nullable=True)
     origin: Mapped[str] = mapped_column(String(255), nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.now)
     profiles: Mapped[List["Profile"]] = relationship(secondary="profile_brands", back_populates="favorite_brands")
