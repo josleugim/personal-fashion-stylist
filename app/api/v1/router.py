@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.v1.endpoints import users, styles, body_type, messages, suggest_outfits, profiles, wardrobes, auth
+from app.api.v1.endpoints import users, styles, body_type, messages, suggest_outfits, profiles, wardrobes, auth, brands
 
 api_router = APIRouter()
 api_router.include_router(auth.router, prefix="/auth", tags=["auth"])
@@ -10,3 +10,4 @@ api_router.include_router(messages.router, prefix="/messages", tags=["messages"]
 api_router.include_router(suggest_outfits.router, prefix="/suggest-outfits", tags=["suggest-outfits"])
 api_router.include_router(profiles.router, prefix="/profiles", tags=["profiles"])
 api_router.include_router(wardrobes.router, prefix="/wardrobes", tags=["wardrobes"])
+api_router.include_router(brands.router, prefix="/brands", tags=["brands"])

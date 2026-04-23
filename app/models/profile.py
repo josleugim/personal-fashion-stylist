@@ -2,13 +2,14 @@ from datetime import datetime
 from typing import TYPE_CHECKING, List
 
 from sqlalchemy import ForeignKey, Integer, String, DateTime, Table, Column
-from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy.dialects.postgresql import ARRAY, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import Enum as SAEnum
 
 from app.db.base import Base
 from app.models.style import Style
 from app.models.body_type import BodyType
+from app.models.brand import Brand
 from app.enums.profile import LogoTolerance
 
 if TYPE_CHECKING:
@@ -31,6 +32,13 @@ profile_body_types = Table(
     Column("body_type_id", Integer, ForeignKey("body_types.id", ondelete="CASCADE"), primary_key=True),
 )
 
+profile_brands = Table(
+    "profile_brands",
+    Base.metadata,
+    Column("profile_id", Integer, ForeignKey("profiles.id", ondelete="CASCADE"), primary_key=True),
+    Column("brand_id", UUID(as_uuid=True), ForeignKey("brands.id", ondelete="CASCADE"), primary_key=True),
+)
+
 
 class Profile(Base):
     __tablename__ = "profiles"
@@ -45,6 +53,7 @@ class Profile(Base):
     user: Mapped["User"] = relationship(back_populates="profile", uselist=False)
     styles: Mapped[List["Style"]] = relationship(secondary=profile_styles, back_populates="profiles")
     body_types: Mapped[List["BodyType"]] = relationship(secondary=profile_body_types, back_populates="profiles")
+    favorite_brands: Mapped[List["Brand"]] = relationship(secondary=profile_brands, back_populates="profiles")
     messages: Mapped[List["Message"]] = relationship(back_populates="profile")
     wardrobes: Mapped[List["Wardrobe"]] = relationship(back_populates="profile")
     fit_notes: Mapped[str | None] = mapped_column(String(255), nullable=True)
