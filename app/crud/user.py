@@ -16,6 +16,7 @@ async def get_user(db: AsyncSession, user_id: int) -> User | None:
         .options(
             selectinload(User.profile).selectinload(Profile.styles),
             selectinload(User.profile).selectinload(Profile.body_types),
+            selectinload(User.profile).selectinload(Profile.favorite_brands),
         )
     )
     return result.scalar_one_or_none()

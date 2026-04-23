@@ -1,13 +1,17 @@
+from uuid import UUID
 from pydantic import BaseModel
 from typing import List
+
 from app.schemas.style import StyleResponse
 from app.schemas.body_type import BodyTypeResponse
+from app.schemas.brand import BrandResponse
 
 
 class ProfileBase(BaseModel):
     user_id: int
     style_ids: List[int] = []
     body_type_ids: List[int] = []
+    favorite_brand_ids: List[UUID] = []
     fit_notes: str | None = None
     favorite_colors: List[str] = []
     colors_to_avoid: List[str] = []
@@ -33,6 +37,7 @@ class ProfileResponse(BaseModel):
     user_id: int
     styles: List[StyleResponse] = []
     body_types: List[BodyTypeResponse] = []
+    favorite_brands: List[BrandResponse] = []
     fit_notes: str | None = None
     favorite_colors: List[str] = []
     colors_to_avoid: List[str] = []
