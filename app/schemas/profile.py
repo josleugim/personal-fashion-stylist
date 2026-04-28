@@ -1,3 +1,4 @@
+from datetime import datetime
 from uuid import UUID
 from pydantic import BaseModel
 from typing import List
@@ -23,6 +24,7 @@ class ProfileBase(BaseModel):
     age: int | None = None
     height: int | None = None
     gender: str | None = None
+    skin_tone_id: int | None = None
 
 class ProfileCreate(ProfileBase):
     pass
@@ -49,6 +51,8 @@ class ProfileResponse(BaseModel):
     age: int | None = None
     height: int | None = None
     gender: str | None = None
+    skin_tone_id: int | None = None
+    created_at: datetime
 
     class Config:
         from_attributes = True

@@ -11,6 +11,7 @@ from app.models.style import Style
 from app.models.body_type import BodyType
 from app.models.brand import Brand
 from app.enums.profile import LogoTolerance
+from app.models.skin_tone import SkinTone
 
 if TYPE_CHECKING:
     from app.models.user import User
@@ -67,4 +68,6 @@ class Profile(Base):
     age: Mapped[int] = mapped_column(Integer, nullable=True)
     height: Mapped[int] = mapped_column(Integer, nullable=True)
     gender: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    skin_tone_id: Mapped[int | None] = mapped_column(ForeignKey("skin_tones.id", ondelete="SET NULL"), nullable=True)
+    skin_tone: Mapped["SkinTone | None"] = relationship(back_populates="profiles")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
