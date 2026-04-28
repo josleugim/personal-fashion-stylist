@@ -6,6 +6,7 @@ from typing import List
 from app.schemas.style import StyleResponse
 from app.schemas.body_type import BodyTypeResponse
 from app.schemas.brand import BrandResponse
+from app.schemas.skin_tone import SkinToneResponse
 
 
 class ProfileBase(BaseModel):
@@ -52,6 +53,7 @@ class ProfileResponse(BaseModel):
     height: int | None = None
     gender: str | None = None
     skin_tone_id: int | None = None
+    skin_tone: SkinToneResponse | None = None
     created_at: datetime
 
     class Config:

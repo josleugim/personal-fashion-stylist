@@ -12,11 +12,17 @@ async def get_profile_by_user_id(db: AsyncSession, user_id: int) -> Profile | No
     result = await db.execute(
         select(Profile)
         .where(Profile.user_id == user_id)
-        .options(selectinload(Profile.styles), selectinload(Profile.body_types), selectinload(Profile.wardrobes), selectinload(Profile.favorite_brands))
+        .options(
+            selectinload(Profile.styles),
+            selectinload(Profile.body_types),
+            selectinload(Profile.wardrobes),
+            selectinload(Profile.favorite_brands),
+            selectinload(Profile.skin_tone)
+        )
     )
     return result.scalar_one_or_none()
 
-async def create_profile(db: AsyncSession, profile: ProfileCreate) -> Profile:
+async def create_profile(db: AsyncSession, profile: ProfileCreate) -> Profile | None:
     styles = (await db.execute(select(Style).where(Style.id.in_(profile.style_ids)))).scalars().all()
     body_types = (await db.execute(select(BodyType).where(BodyType.id.in_(profile.body_type_ids)))).scalars().all()
     favorite_brands = (await db.execute(select(Brand).where(Brand.id.in_(profile.favorite_brand_ids)))).scalars().all()
@@ -36,7 +42,8 @@ async def create_profile(db: AsyncSession, profile: ProfileCreate) -> Profile:
         age=profile.age,
         location=profile.location,
         height=profile.height,
-        gender=profile.gender
+        gender=profile.gender,
+        skin_tone_id=profile.skin_tone_id
     )
     db.add(db_profile)
     await db.flush()
