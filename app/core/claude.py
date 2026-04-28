@@ -65,10 +65,10 @@ def build_system_prompt(user_profile: dict) -> str:
     5. Format the outfit like this:
 
        **[Outfit name]**
-       • Top: [item]
-       • Bottom: [item]
-       • Shoes: [item]
-       • Accessory: [item] (optional)
+       • Top: [color] [item]
+       • Bottom: [color] [item]
+       • Shoes: [color] [item]
+       • Accessory: [color] [item] (optional)
        💡 [1-sentence why it works]
     """.strip()
 
@@ -186,11 +186,12 @@ def _match_wardrobe_items(reply_text: str, wardrobe_items: list) -> list:
     matched = []
 
     for item in wardrobe_items:
-        # Check if item name or brand is mentioned in the reply
         name_match  = item.get("name")  and item["name"].lower()  in reply_lower
         brand_match = item.get("brand") and item["brand"].lower() in reply_lower
+        colors = item.get("color") or []
+        color_match = any(c.lower() in reply_lower for c in colors) if colors else False
 
-        if name_match or brand_match:
+        if name_match or brand_match or color_match:
             matched.append({
                 "id":            str(item.get("id")),
                 "name":          item.get("name"),

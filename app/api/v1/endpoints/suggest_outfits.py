@@ -38,6 +38,7 @@ async def suggest_outfit(
             "id": str(item.id),
             "name": item.name,
             "brand": item.brand,
+            "color": item.color or [],
             "category": item.category,
             "subcategory": item.subcategory,
             "image_url": item.image_url,
