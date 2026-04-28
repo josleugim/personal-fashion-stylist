@@ -3,6 +3,7 @@ from pydantic import BaseModel
 
 
 class SkinToneBase(BaseModel):
+    id: int
     name: str
     hex: str
 
