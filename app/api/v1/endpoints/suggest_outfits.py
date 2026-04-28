@@ -50,24 +50,25 @@ async def suggest_outfit(
     # ── 2. Build user profile dict for prompt ────────────────────
     user_profile = {
         "name": user.first_name,
-        "primary_style": profile.styles if profile.styles else "minimalist",
+        "primary_style": ", ".join(s.name for s in profile.styles) if profile.styles else "minimalist",
         "gender_expression": profile.gender,
         "palette_preference": profile.favorite_colors or [],
         "avoid_colors": profile.colors_to_avoid or [],
-        "body_notes": profile.body_types if profile.body_types else "",
+        "body_notes": ", ".join(bt.name for bt in profile.body_types) if profile.body_types else "",
         "budget": profile.budget or "mid",
         "location": profile.location or "",
-        "logo_tolerance": profile.logo_tolerance or "",
+        "logo_tolerance": profile.logo_tolerance.value if profile.logo_tolerance else "",
         "hobbies": profile.hobbies or [],
         "sports": profile.sports or [],
         "age": profile.age or None,
         "height": profile.height or None,
-        "occasion": payload.occasion,
-        "wardrobe": [  # pass names/brands to system prompt
+        "occasion": [payload.occasion] if payload.occasion else [],
+        "wardrobe": [
             f"{item['brand']} {item['name'] or item['subcategory'] or item['category']}"
             for item in wardrobe_dicts
         ],
         "weather": payload.weather or "",
+        "skin_tone": f"{profile.skin_tone.name} ({profile.skin_tone.hex})" if profile.skin_tone else ""
     }
 
     # ── 3. Fetch last 10 messages for conversation history ───────

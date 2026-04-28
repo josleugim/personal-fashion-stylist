@@ -1,6 +1,7 @@
 import httpx
 import json
 from fastapi import HTTPException
+from markdown_it.presets import default
 
 from app.core.config import settings
 
@@ -20,6 +21,7 @@ def build_system_prompt(user_profile: dict) -> str:
     occasion = ", ".join(user_profile.get("occasion", ""))
     wardrobe = ", ".join(user_profile.get("wardrobe", []))
     weather = user_profile.get("weather", "")
+    skin_tone = user_profile.get("skin_tone", "")
 
     budget_guidance = {
         "low": "Suggest accessible brands (Zara, H&M, ASOS, Mango).",
@@ -48,6 +50,7 @@ def build_system_prompt(user_profile: dict) -> str:
     Typical occasion: {occasion}
     Wardrobe items: {wardrobe}
     Weather: {weather}
+    Skin tone: {skin_tone}
 
     BUDGET GUIDANCE
     ─────────────────────────────────
@@ -70,6 +73,7 @@ def build_system_prompt(user_profile: dict) -> str:
     """.strip()
 
 async def call_claude(system_prompt: str, messages: list, image_base64: str = None, wardrobe: list = []) -> dict:
+    print(system_prompt)
     if image_base64:
         user_content = [
             {"type": "image", "source": {
@@ -193,6 +197,7 @@ def _match_wardrobe_items(reply_text: str, wardrobe_items: list) -> list:
                 "brand":         item.get("brand"),
                 "category":      item.get("category"),
                 "subcategory":   item.get("subcategory"),
+                "color":         item.get("color"),
                 "image_url":     item.get("image_url"),
                 "thumbnail_url": item.get("thumbnail_url"),
                 "ai_description": item.get("ai_description"),
