@@ -11,6 +11,8 @@ from app.crud import user as crud_user
 from app.crud import profile as crud_profile
 from app.crud import message as crud_message
 from app.crud import wardrobe as crud_wardrobe
+from app.crud import outfit_suggestion as outfit_suggestions_crud
+from app.schemas.outfit_suggestion import OutfitSuggestionCreate
 from app.models.user import User
 from app.core.claude import build_system_prompt, call_claude
 
@@ -95,5 +97,18 @@ async def suggest_outfit(
     # ── 6. Save exchange to message model ────────────────────────
     await crud_message.create_message(db, MessageCreate(profile_id=profile.id, role="user", content=current_message))
     await crud_message.create_message(db, MessageCreate(profile_id=profile.id, role="assistant", content=reply["reply"]))
+
+    # 7. Save the outfit suggestions history
+    wardrobe_ids = [
+        item["id"] for item in reply["wardrobe_references"] if item.get("id")
+    ]
+    await outfit_suggestions_crud.create_outfit_suggestion(
+        db=db,
+        outfit_suggestion=OutfitSuggestionCreate(
+            profile_id=profile.id,
+            reply=reply["reply"],
+            wardrobe_item_ids=wardrobe_ids or None,
+        )
+    )
 
     return SuggestOutfitResponse(success=True, reply=reply["reply"], wardrobe_references=reply["wardrobe_references"])

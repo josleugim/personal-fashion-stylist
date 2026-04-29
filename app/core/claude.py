@@ -73,7 +73,6 @@ def build_system_prompt(user_profile: dict) -> str:
     """.strip()
 
 async def call_claude(system_prompt: str, messages: list, image_base64: str = None, wardrobe: list = []) -> dict:
-    print(system_prompt)
     if image_base64:
         user_content = [
             {"type": "image", "source": {

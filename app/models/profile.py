@@ -17,6 +17,7 @@ if TYPE_CHECKING:
     from app.models.user import User
     from app.models.message import Message
     from app.models.wardrobe import Wardrobe
+    from app.models.outfit_suggestion import OutfitSuggestion
 
 
 profile_styles = Table(
@@ -57,6 +58,7 @@ class Profile(Base):
     favorite_brands: Mapped[List["Brand"]] = relationship(secondary=profile_brands, back_populates="profiles")
     messages: Mapped[List["Message"]] = relationship(back_populates="profile")
     wardrobes: Mapped[List["Wardrobe"]] = relationship(back_populates="profile")
+    outfit_suggestions: Mapped[List["OutfitSuggestion"]] = relationship(back_populates="profile")
     fit_notes: Mapped[str | None] = mapped_column(String(255), nullable=True)
     favorite_colors: Mapped[List[str] | None] = mapped_column(ARRAY(String), nullable=True)
     colors_to_avoid: Mapped[List[str] | None] = mapped_column(ARRAY(String), nullable=True)
