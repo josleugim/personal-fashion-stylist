@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, UploadFile, File, Form, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_db
 from app.core.storage import upload_wardrobe_image
-from app.core.claude import analyze_wardrobe_item
+from app.core.claude import analyze_wardrobe_item, is_valid_image
 from app.crud import wardrobe as crud_wardrobe
 from app.crud import profile as crud_profile
 from app.schemas.wardrobe import WardrobeResponse
@@ -32,6 +32,22 @@ async def upload_wardrobe_item(
 
     if len(file_bytes) > 10 * 1024 * 1024:  # 10MB limit
         raise HTTPException(status_code=400, detail="Image must be under 10MB.")
+
+    image_base64 = base64.b64encode(file_bytes).decode("utf-8")
+    media_type = file.content_type or "image/jpeg"
+
+    try:
+        is_valid_response = await is_valid_image(image_base64, media_type)
+        print(is_valid_response)
+        if not is_valid_response["is_valid"]:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Image must be a clothing item or accessory. Detected: {is_valid_response['detected_as']}"
+            )
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"[is_valid_image failed] {type(e).__name__}: {e}")
 
     # ── 2. Upload to Google Cloud Storage ───────────────────────
     try:

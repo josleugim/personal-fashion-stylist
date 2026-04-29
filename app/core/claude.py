@@ -205,3 +205,48 @@ def _match_wardrobe_items(reply_text: str, wardrobe_items: list) -> list:
             })
 
     return matched
+
+async def is_valid_image(image_base64: str, media_type: str = "image/jpeg") -> dict:
+    payload = {
+        "model": "claude-sonnet-4-6",
+        "max_tokens": 200,
+        "system": """You are a clothing image validator. Your only job is to determine whether an image contains a clothing item or fashion accessory (e.g. shirt, pants, shoes, bag, hat, jewelry, etc.).
+        Respond ONLY with a JSON object and no extra text:
+        {
+            "is_valid": true or false,
+            "detected_as": "brief description of what you see in the image"
+        }
+        Set "is_valid" to true only if the image clearly shows a clothing item or accessory. Otherwise set it to false and describe what you actually see.""",
+        "messages": [{
+            "role": "user",
+            "content": [
+                {"type": "image", "source": {
+                    "type": "base64",
+                    "media_type": media_type,
+                    "data": image_base64
+                }},
+                {"type": "text", "text": "Is this a clothing item or fashion accessory?"}
+            ]
+        }]
+    }
+
+    async with httpx.AsyncClient(timeout=30) as client:
+        response = await client.post(
+            "https://api.anthropic.com/v1/messages",
+            headers={
+                "Content-Type": "application/json",
+                "x-api-key": settings.ANTHROPIC_API_KEY,
+                "anthropic-version": "2023-06-01"
+            },
+            json=payload
+        )
+
+        data = response.json()
+
+    if "content" not in data:
+        print(f"[Claude API error] {data}")
+        return {"is_valid": False, "detected_as": "unknown"}
+
+    raw = data["content"][0]["text"]
+    clean = raw.replace("```json", "").replace("```", "").strip()
+    return json.loads(clean)
