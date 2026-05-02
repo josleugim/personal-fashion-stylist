@@ -30,7 +30,6 @@ class OutfitSuggestionResponse(BaseModel):
     profile_id: int
     reply: str
     wardrobe_items: list[WardrobeItemSummary] | None = None
-    color: str | None = None
     created_at: datetime
 
     class Config:

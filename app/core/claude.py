@@ -1,11 +1,11 @@
+import re
 import httpx
 import json
 from fastapi import HTTPException
-from markdown_it.presets import default
 
 from app.core.config import settings
 
-def build_system_prompt(user_profile: dict) -> str:
+def build_system_prompt(user_profile: dict, wardrobe_items: list | None = None) -> str:
     style = user_profile.get("primary_style", "minimalist")
     name = user_profile.get("name", "the user")
     palette = ", ".join(user_profile.get("palette_preference", []))
@@ -19,9 +19,17 @@ def build_system_prompt(user_profile: dict) -> str:
     age = user_profile.get("age", None)
     height = user_profile.get("height", None)
     occasion = ", ".join(user_profile.get("occasion", ""))
-    wardrobe = ", ".join(user_profile.get("wardrobe", []))
     weather = user_profile.get("weather", "")
     skin_tone = user_profile.get("skin_tone", "")
+
+    if wardrobe_items:
+        wardrobe_section = "\n".join(
+            f"  [{item['id']}] {item.get('brand') or ''} {item.get('name') or item.get('subcategory') or item.get('category') or ''}"
+            f" ({', '.join(item.get('color') or [])})"
+            for item in wardrobe_items
+        )
+    else:
+        wardrobe_section = ", ".join(user_profile.get("wardrobe", []))
 
     budget_guidance = {
         "low": "Suggest accessible brands (Zara, H&M, ASOS, Mango).",
@@ -48,9 +56,12 @@ def build_system_prompt(user_profile: dict) -> str:
     Age: {age}
     Height: {height}
     Typical occasion: {occasion}
-    Wardrobe items: {wardrobe}
     Weather: {weather}
     Skin tone: {skin_tone}
+
+    WARDROBE ITEMS
+    ─────────────────────────────────
+{wardrobe_section}
 
     BUDGET GUIDANCE
     ─────────────────────────────────
@@ -70,9 +81,17 @@ def build_system_prompt(user_profile: dict) -> str:
        • Shoes: [color] [item]
        • Accessory: [color] [item] (optional)
        💡 [1-sentence why it works]
+
+    6. After the outfit, on its own line output exactly:
+       ITEMS_USED: ["<id1>","<id2>"]
+       listing ONLY the IDs from the WARDROBE ITEMS section for the pieces you actually included in the outfit.
+       If no wardrobe items were used, output: ITEMS_USED: []
     """.strip()
 
-async def call_claude(system_prompt: str, messages: list, image_base64: str = None, wardrobe: list = []) -> dict:
+async def call_claude(system_prompt: str, messages: list, image_base64: str = None, wardrobe: list | None = None) -> dict:
+    if wardrobe is None:
+        wardrobe = []
+
     if image_base64:
         user_content = [
             {"type": "image", "source": {
@@ -84,7 +103,6 @@ async def call_claude(system_prompt: str, messages: list, image_base64: str = No
         ]
         messages = messages[:-1] + [{"role": "user", "content": user_content}]
 
-        # Sanitize messages
         messages = [m for m in messages if m.get("content")]
         while messages and messages[0]["role"] == "assistant":
             messages.pop(0)
@@ -114,15 +132,23 @@ async def call_claude(system_prompt: str, messages: list, image_base64: str = No
         response.raise_for_status()
         data = response.json()
 
-        # Extract text blocks (may also contain tool_use blocks)
         reply_text = "\n".join(
             block["text"]
             for block in data.get("content", [])
             if block.get("type") == "text"
         )
 
-        # ── Match wardrobe items mentioned in the reply ──────────────
-        matched_items = _match_wardrobe_items(reply_text, wardrobe)
+        # ── Extract structured item IDs Claude declared it used ──────
+        matched_items = []
+        match = re.search(r'ITEMS_USED:\s*(\[.*?\])', reply_text)
+        if match:
+            reply_text = reply_text[:match.start()].strip()
+            try:
+                used_ids = set(json.loads(match.group(1)))
+                wardrobe_by_id = {str(item["id"]): item for item in wardrobe}
+                matched_items = [wardrobe_by_id[wid] for wid in used_ids if wid in wardrobe_by_id]
+            except (json.JSONDecodeError, KeyError):
+                pass
 
         return {
             "reply": reply_text,
@@ -179,31 +205,6 @@ async def analyze_wardrobe_item(image_base64: str, media_type: str = "image/jpeg
     clean = raw.replace("```json", "").replace("```", "").strip()
     return json.loads(clean)
 
-def _match_wardrobe_items(reply_text: str, wardrobe_items: list) -> list:
-    """Find wardrobe items whose name or brand appears in Claude's reply."""
-    reply_lower = reply_text.lower()
-    matched = []
-
-    for item in wardrobe_items:
-        name_match  = item.get("name")  and item["name"].lower()  in reply_lower
-        brand_match = item.get("brand") and item["brand"].lower() in reply_lower
-        colors = item.get("color") or []
-        color_match = any(c.lower() in reply_lower for c in colors) if colors else False
-
-        if name_match or brand_match or color_match:
-            matched.append({
-                "id":            str(item.get("id")),
-                "name":          item.get("name"),
-                "brand":         item.get("brand"),
-                "category":      item.get("category"),
-                "subcategory":   item.get("subcategory"),
-                "color":         item.get("color"),
-                "image_url":     item.get("image_url"),
-                "thumbnail_url": item.get("thumbnail_url"),
-                "ai_description": item.get("ai_description"),
-            })
-
-    return matched
 
 async def is_valid_image(image_base64: str, media_type: str = "image/jpeg") -> dict:
     payload = {

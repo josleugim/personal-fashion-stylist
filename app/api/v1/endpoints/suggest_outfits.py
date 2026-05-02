@@ -83,7 +83,7 @@ async def suggest_outfit(
     history.append({"role": "user", "content": current_message})
 
     # ── 5. Call Claude ───────────────────────────────────────────
-    system_prompt = build_system_prompt(user_profile)
+    system_prompt = build_system_prompt(user_profile, wardrobe_items=wardrobe_dicts)
     try:
         reply = await call_claude(
             system_prompt=system_prompt,
