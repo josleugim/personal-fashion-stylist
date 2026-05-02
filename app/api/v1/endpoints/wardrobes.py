@@ -1,11 +1,15 @@
+import uuid
+
 from fastapi import APIRouter, HTTPException, UploadFile, File, Form, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.api.deps import get_current_profile
 from app.db.session import get_db
 from app.core.storage import upload_wardrobe_image
 from app.core.claude import analyze_wardrobe_item, is_valid_image
 from app.crud import wardrobe as crud_wardrobe
-from app.crud import profile as crud_profile
 from app.schemas.wardrobe import WardrobeResponse
+from app.models.profile import Profile
 from typing import Optional
 import base64
 
@@ -18,14 +22,15 @@ async def upload_wardrobe_item(
     brand:   Optional[str] = Form(None),
     notes:   Optional[str] = Form(None),
     file:    UploadFile = File(...),
-    db:      AsyncSession = Depends(get_db)
+    db:      AsyncSession = Depends(get_db),
+    current_profile: Profile = Depends(get_current_profile)
 ):
     # ── 0. Validate profile exists ──────────────────────────────
     # profile_id here is the user_id; resolve to the profile's actual PK
-    profile = await crud_profile.get_profile_by_user_id(db, profile_id)
-    if not profile:
-        raise HTTPException(status_code=404, detail=f"Profile for user {profile_id} not found.")
-    profile_pk = profile.id
+    if current_profile.id != profile_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    profile_pk = current_profile.id
 
     # ── 1. Read image bytes ──────────────────────────────────────
     file_bytes = await file.read()
@@ -82,12 +87,18 @@ async def upload_wardrobe_item(
 
 
 @router.get("/{profile_id}", response_model=list[WardrobeResponse])
-async def get_wardrobe(profile_id: int, db: AsyncSession = Depends(get_db)):
+async def get_wardrobe(profile_id: int, db: AsyncSession = Depends(get_db), current_profile: Profile = Depends(get_current_profile)):
+    if current_profile.id != profile_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+
     return await crud_wardrobe.get_by_user(db, profile_id)
 
 
 @router.delete("/{item_id}")
-async def delete_wardrobe_item(item_id: int, profile_id: int, db: AsyncSession = Depends(get_db)):
+async def delete_wardrobe_item(item_id: uuid.UUID, profile_id: int, db: AsyncSession = Depends(get_db), current_profile: Profile = Depends(get_current_profile)):
+    if current_profile.id != profile_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+
     deleted = await crud_wardrobe.delete(db, item_id, profile_id)
     if not deleted:
         raise HTTPException(status_code=404, detail="Item not found.")
