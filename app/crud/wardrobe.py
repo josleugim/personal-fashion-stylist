@@ -31,11 +31,13 @@ async def create(db: AsyncSession, profile_id: int, image_data: dict, ai_data: d
     await db.refresh(item)
     return item
 
-async def get_by_user(db: AsyncSession, profile_id: int) -> list:
+async def get_by_user(db: AsyncSession, profile_id: int, skip: int = 0, limit: int = 20) -> list:
     result = await db.execute(
         select(Wardrobe)
         .filter(Wardrobe.profile_id == profile_id, Wardrobe.is_active == True)
         .order_by(Wardrobe.created_at.desc())
+        .offset(skip)
+        .limit(limit)
     )
     return result.scalars().all()
 

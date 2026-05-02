@@ -87,11 +87,23 @@ async def upload_wardrobe_item(
 
 
 @router.get("/{profile_id}", response_model=list[WardrobeResponse])
-async def get_wardrobe(profile_id: int, db: AsyncSession = Depends(get_db), current_profile: Profile = Depends(get_current_profile)):
+async def get_wardrobe(
+    profile_id: int,
+    page: int = 1,
+    page_size: int = 20,
+    db: AsyncSession = Depends(get_db),
+    current_profile: Profile = Depends(get_current_profile)
+):
     if current_profile.id != profile_id:
         raise HTTPException(status_code=403, detail="Access denied")
 
-    return await crud_wardrobe.get_by_user(db, profile_id)
+    if page < 1:
+        raise HTTPException(status_code=400, detail="page must be >= 1")
+    if not (1 <= page_size <= 100):
+        raise HTTPException(status_code=400, detail="page_size must be between 1 and 100")
+
+    skip = (page - 1) * page_size
+    return await crud_wardrobe.get_by_user(db, profile_id, skip=skip, limit=page_size)
 
 
 @router.delete("/{item_id}")
