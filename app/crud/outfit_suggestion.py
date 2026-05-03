@@ -6,11 +6,13 @@ from app.models.wardrobe import Wardrobe
 from app.schemas.outfit_suggestion import OutfitSuggestionResponse, OutfitSuggestionCreate, WardrobeItemSummary
 
 
-async def get_outfit_suggestions(db: AsyncSession, profile_id: int) -> list[OutfitSuggestionResponse]:
+async def get_outfit_suggestions(db: AsyncSession, profile_id: int, skip: int = 0, limit: int = 20) -> list[OutfitSuggestionResponse]:
     result = await db.execute(
         select(OutfitSuggestion)
         .where(OutfitSuggestion.profile_id == profile_id)
-        .order_by(OutfitSuggestion.created_at)
+        .order_by(OutfitSuggestion.created_at.desc())
+        .offset(skip)
+        .limit(limit)
     )
     suggestions = result.scalars().all()
 
@@ -19,11 +21,11 @@ async def get_outfit_suggestions(db: AsyncSession, profile_id: int) -> list[Outf
     wardrobe_map: dict = {}
     if all_ids:
         wardrobe_result = await db.execute(
-            select(Wardrobe.id, Wardrobe.brand, Wardrobe.thumbnail_url, Wardrobe.color)
+            select(Wardrobe.id, Wardrobe.brand, Wardrobe.thumbnail_url, Wardrobe.image_url)
             .where(Wardrobe.id.in_(all_ids))
         )
         wardrobe_map = {
-            row.id: WardrobeItemSummary(id=row.id, brand=row.brand, thumbnail_url=row.thumbnail_url, color=row.color)
+            row.id: WardrobeItemSummary(id=row.id, brand=row.brand, thumbnail_url=row.thumbnail_url, image_url=row.image_url)
             for row in wardrobe_result
         }
 

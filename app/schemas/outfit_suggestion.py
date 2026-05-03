@@ -8,7 +8,7 @@ class WardrobeItemSummary(BaseModel):
     id: uuid.UUID
     brand: str | None = None
     thumbnail_url: str | None = None
-    color: list[str] | None = None
+    image_url: str | None = None
 
     class Config:
         from_attributes = True
